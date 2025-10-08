@@ -18,7 +18,7 @@ const SupplierScreen = () => {
 
   const fetchSuppliers = async () => {
     try {
-      const response = await fetch(" https://hyperemic-kimi-overdeliciously.ngrok-free.dev/api/SupplierData");
+      const response = await fetch("https://hyperemic-kimi-overdeliciously.ngrok-free.dev/api/SupplierData");
       if (response.status === 200) {
         const res = await response.json();
         const transformed = res.data.map((item) => ({
@@ -45,7 +45,7 @@ const SupplierScreen = () => {
 
   const handleClearAll = async () => {
     try {
-      const response = await fetch(" https://hyperemic-kimi-overdeliciously.ngrok-free.dev/api/deletesuppliers", {
+      const response = await fetch("https://hyperemic-kimi-overdeliciously.ngrok-free.dev/api/deletesuppliers", {
         method: "DELETE"
       });
       if (response.ok) {
@@ -155,7 +155,7 @@ const SupplierScreen = () => {
 
     try {
       if (clearExisting) {
-        const clearResp = await fetch(" https://hyperemic-kimi-overdeliciously.ngrok-free.dev/api/deletesuppliers", {
+        const clearResp = await fetch("https://hyperemic-kimi-overdeliciously.ngrok-free.dev/api/deletesuppliers", {
           method: "DELETE"
         });
         if (!clearResp.ok) {
@@ -170,7 +170,7 @@ const SupplierScreen = () => {
       const formData = new FormData();
       formData.append("file", blob, "suppliers.csv");
 
-      const response = await fetch(" https://hyperemic-kimi-overdeliciously.ngrok-free.dev/api/importcsv", {
+      const response = await fetch("https://hyperemic-kimi-overdeliciously.ngrok-free.dev/api/importcsv", {
         method: "POST",
         body: formData,
       });
