@@ -11,6 +11,9 @@ const SupplierScreen = () => {
   const [clearConfirmOpen, setClearConfirmOpen] = useState(false);
   const fileInputRef = useRef(null);
   const [showClearModal, setShowClearModal] = useState(false);
+  const username = "ritik";
+  const password = "mysecret123";
+  const basicAuth = btoa(`${username}:${password}`);
 
   useEffect(() => {
     fetchSuppliers();
@@ -18,7 +21,12 @@ const SupplierScreen = () => {
 
   const fetchSuppliers = async () => {
     try {
-      const response = await fetch("https://hyperemic-kimi-overdeliciously.ngrok-free.dev/api/SupplierData");
+      const response = await fetch("https://hyperemic-kimi-overdeliciously.ngrok-free.dev/api/SupplierData", {
+                                    headers: {
+                                      Authorization : `Basic ${basicAuth}`
+                                    }
+                                  }
+                                  );
       if (response.status === 200) {
         const res = await response.json();
         const transformed = res.data.map((item) => ({
@@ -46,7 +54,8 @@ const SupplierScreen = () => {
   const handleClearAll = async () => {
     try {
       const response = await fetch("https://hyperemic-kimi-overdeliciously.ngrok-free.dev/api/deletesuppliers", {
-        method: "DELETE"
+        method: "DELETE",
+        Authorization: `Basic ${basicAuth}`
       });
       if (response.ok) {
         setSuppliers([]);
@@ -156,7 +165,8 @@ const SupplierScreen = () => {
     try {
       if (clearExisting) {
         const clearResp = await fetch("https://hyperemic-kimi-overdeliciously.ngrok-free.dev/api/deletesuppliers", {
-          method: "DELETE"
+          method: "DELETE",
+          Authorization: `Basic ${basicAuth}`
         });
         if (!clearResp.ok) {
           alert("Failed to clear existing data.");
@@ -173,6 +183,7 @@ const SupplierScreen = () => {
       const response = await fetch("https://hyperemic-kimi-overdeliciously.ngrok-free.dev/api/importcsv", {
         method: "POST",
         body: formData,
+        Authorization: `Basic ${basicAuth}`
       });
 
       if (!response.ok) {
