@@ -2,7 +2,7 @@ import React, { useState, useRef, useEffect } from "react";
 import ExcelJS from "exceljs";
 import { saveAs } from "file-saver";
 import Papa from "papaparse";
-import Modal from "../components/Modal.jsx";
+import Modal from '../components/Modal.jsx';
 
 const SupplierScreen = () => {
   const [suppliers, setSuppliers] = useState([]);
@@ -11,9 +11,7 @@ const SupplierScreen = () => {
   const [clearConfirmOpen, setClearConfirmOpen] = useState(false);
   const fileInputRef = useRef(null);
   const [showClearModal, setShowClearModal] = useState(false);
-  const username = "ritik";
-  const password = "mysecret123";
-  const basicAuth = btoa(`${username}:${password}`);
+  const [nextSupplierID, setNextSupplierID] = useState(1);
 
   useEffect(() => {
     fetchSuppliers();
@@ -21,16 +19,7 @@ const SupplierScreen = () => {
 
   const fetchSuppliers = async () => {
     try {
-      const response = await fetch(
-        "http://localhost:5276/api/SupplierData",
-        {
-          credentials: "include",
-          headers: {
-            Authorization: `Basic ${basicAuth}`,
-            "Content-Type": "application/json",
-          },
-        }
-      );
+      const response = await fetch("http://localhost:5276/api/SupplierData");
       if (response.status === 200) {
         const res = await response.json();
         const transformed = res.data.map((item) => ({
@@ -46,9 +35,12 @@ const SupplierScreen = () => {
           Country: item.country,
           Tax_Identification: item.tax_id,
           Created_Date: new Date().toISOString().split("T")[0],
-          Error_Msg: item.error_msg,
+          Error_Msg: item.error_msg
         }));
         setSuppliers(transformed);
+
+        const maxID = transformed.length > 0 ? Math.max(...transformed.map(s => s.Supplier_ID)) : 0;
+        setNextSupplierID(maxID + 1);
       }
     } catch (error) {
       console.error("Error fetching suppliers:", error);
@@ -57,24 +49,18 @@ const SupplierScreen = () => {
 
   const handleClearAll = async () => {
     try {
-      const response = await fetch(
-        "http://localhost:5276/api/deletesuppliers",
-        {
-          method: "DELETE",
-          credentials: "include",
-          headers: {
-            Authorization: `Basic ${basicAuth}`,
-          },
-        }
-      );
+      const response = await fetch("http://localhost:5276/api/deletesuppliers", {
+        method: "DELETE"
+      });
       if (response.ok) {
         setSuppliers([]);
+        setNextSupplierID(1);
         alert("All data cleared!");
       } else {
         alert("Failed to clear data.");
       }
     } catch (err) {
-      alert("Error clearing data: " + err);
+      alert("Error clearing data: " + err.message);
     }
     setShowClearModal(false);
     setClearConfirmOpen(false);
@@ -110,7 +96,6 @@ const SupplierScreen = () => {
 
     const file = files[0];
     const ext = file.name.split(".").pop()?.toLowerCase();
-
     let importedData = [];
 
     if (ext === "csv") {
@@ -134,7 +119,6 @@ const SupplierScreen = () => {
       await workbook.xlsx.load(buffer);
 
       const worksheet = workbook.worksheets[0];
-
       worksheet.eachRow((row, rowNumber) => {
         if (rowNumber === 1) return;
         const rowData = {
@@ -150,7 +134,7 @@ const SupplierScreen = () => {
           Country: String(row.getCell(10).value || ""),
           Tax_Identification: String(row.getCell(11).value || ""),
           Created_Date: String(row.getCell(12).value || ""),
-          Error_Msg: String(row.getCell(13).value || ""),
+          Error_Msg: String(row.getCell(13).value || "")
         };
         importedData.push(rowData);
       });
@@ -174,21 +158,15 @@ const SupplierScreen = () => {
 
     try {
       if (clearExisting) {
-        const clearResp = await fetch(
-          "http://localhost:5276/api/deletesuppliers",
-          {
-            method: "DELETE",
-            credentials: "include",
-            headers: {
-              Authorization: `Basic ${basicAuth}`,
-            },
-          }
-        );
+        const clearResp = await fetch("http://localhost:5276/api/deletesuppliers", {
+          method: "DELETE"
+        });
         if (!clearResp.ok) {
           alert("Failed to clear existing data.");
           return;
         }
         setSuppliers([]);
+        setNextSupplierID(1);
       }
 
       const csv = Papa.unparse(pendingImport);
@@ -196,17 +174,10 @@ const SupplierScreen = () => {
       const formData = new FormData();
       formData.append("file", blob, "suppliers.csv");
 
-      const response = await fetch(
-        "http://localhost:5276/api/importcsv",
-        {
-          method: "POST",
-          body: formData,
-          credentials: "include",
-          headers: {
-            Authorization: `Basic ${basicAuth}`,
-          },
-        }
-      );
+      const response = await fetch("http://localhost:5276/api/importcsv", {
+        method: "POST",
+        body: formData,
+      });
 
       if (!response.ok) {
         const errorText = await response.text();
@@ -215,8 +186,10 @@ const SupplierScreen = () => {
 
       alert("File imported successfully!");
 
+      // ✅ Only fetch from backend — do NOT manually merge pendingImport
       await fetchSuppliers();
 
+      // ✅ Clear preview after import
       setPendingImport(null);
       setShowConfirm(false);
       setClearConfirmOpen(false);
@@ -231,7 +204,9 @@ const SupplierScreen = () => {
     setClearConfirmOpen(false);
   };
 
-  const displayedData = pendingImport || suppliers;
+  // ✅ Only show preview if pendingImport exists, otherwise show suppliers
+  const dataToDisplay = pendingImport || suppliers;
+  const isPreviewMode = !!pendingImport;
 
   return (
     <div className="container mx-auto p-4">
@@ -263,22 +238,15 @@ const SupplierScreen = () => {
           onConfirm={handleClearAll}
           title="Confirm Clear All Data"
         >
-          <p>
-            Do you want to clear all data from the table? This action cannot be
-            undone.
-          </p>
+          <p>Do you want to clear all data from the table? This action cannot be undone.</p>
         </Modal>
 
         <Modal
           open={clearConfirmOpen}
           onClose={() => setClearConfirmOpen(false)}
           title="Import Options"
-          onConfirm={() => proceedImport(true)}
         >
-          <p>
-            Do you want to clear existing data before import? Click 'Clear &
-            Import' to clear, 'Append Import' to append or 'Cancel' to abort.
-          </p>
+          <p>Do you want to clear existing data before import? Click 'Clear & Import' to clear, 'Append Import' to append or 'Cancel' to abort.</p>
           <div className="mt-4 flex space-x-4">
             <button
               className="bg-green-600 text-white px-4 py-2 rounded"
@@ -334,25 +302,27 @@ const SupplierScreen = () => {
         )}
       </div>
 
+      {isPreviewMode && (
+        <div className="mb-4 p-3 bg-yellow-50 border border-yellow-300 rounded">
+          <strong>Preview Mode:</strong> Confirm import to save these {pendingImport.length} records.
+        </div>
+      )}
+
       <div className="overflow-x-auto">
         <table className="min-w-full border border-gray-300">
           <thead className="bg-gray-200">
             <tr>
-              {suppliers.length > 0 &&
-                Object.keys(suppliers[0]).map((key) => (
-                  <th key={key} className="border border-gray-300 px-3 py-2">
-                    {key.replace(/_/g, " ")}
-                  </th>
-                ))}
+              {dataToDisplay.length > 0 && Object.keys(dataToDisplay[0]).map((key) => (
+                <th key={key} className="border border-gray-300 px-3 py-2">
+                  {key.replace(/_/g, " ")}
+                </th>
+              ))}
             </tr>
           </thead>
           <tbody>
-            {displayedData.map((supplier) => (
-              <tr
-                key={supplier.Supplier_ID}
-                className="odd:bg-white even:bg-gray-50"
-              >
-                {Object.values(supplier).map((val, idx) => (
+            {dataToDisplay.map((item) => (
+              <tr key={item.Supplier_ID || Math.random()} className="odd:bg-white even:bg-gray-50">
+                {Object.values(item).map((val, idx) => (
                   <td key={idx} className="border border-gray-300 px-3 py-2">
                     {val}
                   </td>
