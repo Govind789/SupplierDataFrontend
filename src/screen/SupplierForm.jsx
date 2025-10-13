@@ -22,7 +22,7 @@ const SupplierForm = () => {
   useEffect(() => {
     const fetchMaxId = async () => {
       try {
-        const response = await fetch("http://supplierdata.runasp.net/api/SupplierData");
+        const response = await fetch("https://supplierdata.runasp.net/api/SupplierData");
         if (response.ok) {
           const { data = [] } = await response.json();
           const maxId = data.length
@@ -52,7 +52,7 @@ const SupplierForm = () => {
     e.preventDefault();
     setErrors([]);
     try {
-      const response = await fetch("http://supplierdata.runasp.net/api/submitForm", {
+      const response = await fetch("https://supplierdata.runasp.net/api/submitForm", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(formData),
@@ -70,7 +70,7 @@ const SupplierForm = () => {
       setFormData(initialFormData);
 
       // Refresh Supplier_ID for next
-      const response2 = await fetch("http://supplierdata.runasp.net/api/SupplierData");
+      const response2 = await fetch("https://supplierdata.runasp.net/api/SupplierData");
       if (response2.ok) {
         const { data: data2 = [] } = await response2.json();
         const maxId = data2.length
