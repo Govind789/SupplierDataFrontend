@@ -9,7 +9,7 @@ const SupplierFormContainer = () => {
   useEffect(() => {
     const fetchMaxSupplierId = async () => {
       try {
-        const response = await fetch("http://localhost:5276/api/SupplierData");
+        const response = await fetch("https://supplierdata.runasp.net/api/SupplierData");
         if (response.ok) {
           const data = await response.json();
           const maxId = data.data.length
@@ -46,7 +46,7 @@ const SupplierFormContainer = () => {
     };
 
     try {
-      const response = await fetch("http://localhost:5276/api/submitForm", {
+      const response = await fetch("https://supplierdata.runasp.net/api/submitForm", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
