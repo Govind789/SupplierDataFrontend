@@ -19,7 +19,7 @@ const SupplierScreen = () => {
 
   const fetchSuppliers = async () => {
     try {
-      const response = await fetch("http://localhost:5276/api/SupplierData");
+      const response = await fetch("http://supplierdata.runasp.net/api/SupplierData");
       if (response.status === 200) {
         const res = await response.json();
         const transformed = res.data.map((item) => ({
@@ -49,7 +49,7 @@ const SupplierScreen = () => {
 
   const handleClearAll = async () => {
     try {
-      const response = await fetch("http://localhost:5276/api/deletesuppliers", {
+      const response = await fetch("http://supplierdata.runasp.net/api/deletesuppliers", {
         method: "DELETE"
       });
       if (response.ok) {
@@ -158,7 +158,7 @@ const SupplierScreen = () => {
 
     try {
       if (clearExisting) {
-        const clearResp = await fetch("http://localhost:5276/api/deletesuppliers", {
+        const clearResp = await fetch("http://supplierdata.runasp.net/api/deletesuppliers", {
           method: "DELETE"
         });
         if (!clearResp.ok) {
@@ -174,7 +174,7 @@ const SupplierScreen = () => {
       const formData = new FormData();
       formData.append("file", blob, "suppliers.csv");
 
-      const response = await fetch("http://localhost:5276/api/importcsv", {
+      const response = await fetch("http://supplierdata.runasp.net/api/importcsv", {
         method: "POST",
         body: formData,
       });
