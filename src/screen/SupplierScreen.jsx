@@ -18,34 +18,38 @@ const SupplierScreen = () => {
   }, []);
 
   const fetchSuppliers = async () => {
-    try {
-      const response = await fetch("https://supplierdata.runasp.net/api/SupplierData");
-      if (response.status === 200) {
-        const res = await response.json();
-        const transformed = res.data.map((item) => ({
-          Supplier_ID: item.sup_id,
-          Supplier_Name: item.sup_Name,
-          Contact_Name: item.name,
-          Contact_Phone: item.phone,
-          Contact_Email: item.email,
-          Address: item.address,
-          City: item.city,
-          State: item.state,
-          Postal_Code: item.postal_code,
-          Country: item.country,
-          Tax_Identification: item.tax_id,
-          Created_Date: new Date().toISOString().split("T")[0],
-          Error_Msg: item.error_msg
-        }));
-        setSuppliers(transformed);
+  try {
+    const response = await fetch("https://supplierdata.runasp.net/api/SupplierData");
+    if (response.status === 200) {
+      const res = await response.json();
+      const dataArray = Array.isArray(res) ? res : res.data || [];
 
-        const maxID = transformed.length > 0 ? Math.max(...transformed.map(s => s.Supplier_ID)) : 0;
-        setNextSupplierID(maxID + 1);
-      }
-    } catch (error) {
-      console.error("Error fetching suppliers:", error);
+      const transformed = dataArray.map((item) => ({
+        Supplier_ID: item.sup_id,
+        Supplier_Name: item.sup_Name,
+        Contact_Name: item.name,
+        Contact_Phone: item.phone,
+        Contact_Email: item.email,
+        Address: item.address,
+        City: item.city,
+        State: item.state,
+        Postal_Code: item.postal_code,
+        Country: item.country,
+        Tax_Identification: item.tax_id,
+        Created_Date: new Date().toISOString().split("T")[0],
+        Error_Msg: item.error_msg
+      }));
+
+      setSuppliers(transformed);
+
+      const maxID = transformed.length > 0 ? Math.max(...transformed.map(s => s.Supplier_ID)) : 0;
+      setNextSupplierID(maxID + 1);
     }
-  };
+  } catch (error) {
+    console.error("Error fetching suppliers:", error);
+  }
+};
+
 
   const handleClearAll = async () => {
     try {
